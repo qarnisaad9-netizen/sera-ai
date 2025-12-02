@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>SERA AI</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        .box {
+            max-width: 500px;
+            margin: auto;
+            border: 1px solid #fff;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        input, button {
+            padding: 10px;
+            width: 80%;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SERA AI</h1>
+    <div class="box">
+        <p>مرحبًا بك! اسأل أي سؤال عن العناية أو البشرة أو المنتجات ❤️</p>
+        <input type="text" id="question" placeholder="اكتب سؤالك هنا...">
+        <button onclick="answer()">إرسال</button>
+        <p id="response"></p>
+    </div>
+
+    <script>
+        function answer() {
+            document.getElementById("response").innerHTML = 
+                "سيتم إضافة الذكاء الاصطناعي الحقيقي هنا لاحقًا بعد الربط ✨";
+        }
+    </script>
+</body>
+</html>
