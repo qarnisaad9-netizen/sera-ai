@@ -1,39 +1,41 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import OpenAI from "openai";
 
-dotenv.config();
-
 const app = express();
+
+// Render يعطيك البورت في المتغيّر PORT
+const PORT = process.env.PORT || 3000;
+
+// إعدادات عامة
 app.use(cors());
 app.use(express.json());
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+// مبدئياً خليه بدون مفتاح OpenAI عشان نختبر فقط
+// بعدين نضيف الذكاء هنا
+
+// مسار التجربة: http://...onrender.com/
+app.get("/", (req, res) => {
+  res.send("✅ SERA AI backend is running");
 });
 
-app.post("/ask", async (req, res) => {
-  try {
-    const { question } = req.body;
+// (اختياري) مسار دردشة نفعّله لاحقاً
+// app.post("/chat", async (req, res) => {
+//   try {
+//     const { message } = req.body;
+//     if (!message) {
+//       return res.status(400).json({ error: "message is required" });
+//     }
+//
+//     // هنا بنحط كود OpenAI لاحقاً
+//
+//     res.json({ reply: "Test reply from SERA AI backend" });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// });
 
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "You are SERA AI assistant." },
-        { role: "user", content: question }
-      ]
-    });
-
-    res.json({
-      answer: response.choices[0].message.content
-    });
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.listen(3000, () => {
-  console.log("SERA AI backend running on port 3000");
+app.listen(PORT, () => {
+  console.log(`🚀 Server is listening on port ${PORT}`);
 });
