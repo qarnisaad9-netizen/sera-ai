@@ -1,1 +1,16 @@
-
+{
+  "name": "sera-ai-backend",
+  "version": "1.0.0",
+  "description": "Backend for SERA AI",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "openai": "4.52.0",
+    "dotenv": "^16.3.1"
+  }
+}
