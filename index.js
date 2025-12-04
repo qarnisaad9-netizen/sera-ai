@@ -1,41 +1,72 @@
-import express from "express";
-import cors from "cors";
-import OpenAI from "openai";
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
+const OpenAI = require("openai");
 
+// إعداد التطبيق
 const app = express();
-
-// Render يعطيك البورت في المتغيّر PORT
-const PORT = process.env.PORT || 3000;
-
-// إعدادات عامة
 app.use(cors());
 app.use(express.json());
 
-// مبدئياً خليه بدون مفتاح OpenAI عشان نختبر فقط
-// بعدين نضيف الذكاء هنا
+const PORT = process.env.PORT || 3000;
 
-// مسار التجربة: http://...onrender.com/
-app.get("/", (req, res) => {
-  res.send("✅ SERA AI backend is running");
+// التأكد من وجود مفتاح OpenAI
+if (!process.env.OPENAI_API_KEY) {
+  console.warn("⚠️ OPENAI_API_KEY is not set. AI routes will not work.");
+}
+
+// عميل OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-// (اختياري) مسار دردشة نفعّله لاحقاً
-// app.post("/chat", async (req, res) => {
-//   try {
-//     const { message } = req.body;
-//     if (!message) {
-//       return res.status(400).json({ error: "message is required" });
-//     }
-//
-//     // هنا بنحط كود OpenAI لاحقاً
-//
-//     res.json({ reply: "Test reply from SERA AI backend" });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Server error" });
-//   }
-// });
+// مسار افتراضي للتأكد أن السيرفر شغال
+app.get("/", (req, res) => {
+  res.send("SERA AI backend is running ✅");
+});
 
+// مسار /ping للفحص السريع
+app.get("/ping", (req, res) => {
+  res.json({ status: "ok" });
+});
+
+// مسار الذكاء الأساسي /ask
+app.post("/ask", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: "message is required" });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: "OPENAI_API_KEY not configured" });
+    }
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are SERA AI, an expert skincare and beauty assistant. You answer in Arabic by default unless the user writes in English. Ask simple clarifying questions if needed, then suggest routines and suitable products in a friendly, practical tone.",
+        },
+        { role: "user", content: message },
+      ],
+    });
+
+    const reply =
+      completion.choices?.[0]?.message?.content ||
+      "عذراً، حدث خطأ ولم أستطع إنشاء رد الآن.";
+
+    res.json({ reply });
+  } catch (error) {
+    console.error("Error in /ask:", error.response?.data || error.message || error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// تشغيل السيرفر
 app.listen(PORT, () => {
-  console.log(`🚀 Server is listening on port ${PORT}`);
-}); 
+  console.log(`SERA AI backend listening on port ${PORT}`);
+});
