@@ -1,68 +1,160 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
-const OpenAI = require("openai");
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERA AI - استشارة العناية بالبشرة</title>
 
-// إعداد التطبيق
-const app = express();
-app.use(cors());
-app.use(express.json());
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            font-family: "Tahoma", sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
 
-const PORT = process.env.PORT || 3000;
+        .chat-wrapper {
+            width: 100%;
+            max-width: 650px;
+            background: #111;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 0 18px rgba(255,255,255,0.05);
+        }
 
-// التأكد من وجود مفتاح OpenAI
-if (!process.env.OPENAI_API_KEY) {
-  console.warn("⚠️ OPENAI_API_KEY is not set. AI routes will not work.");
-}
+        .header {
+            text-align: center;
+            padding: 10px 0 20px;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: white;
+        }
 
-// عميل OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+        .messages {
+            height: 65vh;
+            overflow-y: auto;
+            padding: 5px 10px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #0c0c0c;
+        }
 
-// مسار افتراضي للتأكد أن السيرفر شغال
-app.get("/", (req, res) => {
-  res.send("SERA AI backend is running ✅");
-});
+        .msg {
+            margin: 12px 0;
+            padding: 12px 16px;
+            border-radius: 10px;
+            max-width: 80%;
+            font-size: 16px;
+            line-height: 1.6;
+        }
 
-// مسار /ping للفحص السريع
-app.get("/ping", (req, res) => {
-  res.json({ status: "ok" });
-});
+        .user {
+            background: #1f1f1f;
+            align-self: flex-end;
+            margin-left: auto;
+        }
 
-app.post("/ask", async (req, res) => {
-  try {
-    const { message } = req.body;
+        .ai {
+            background: white;
+            color: black;
+            margin-right: auto;
+        }
 
-    if (!message) {
-      return res.status(400).json({ error: "message is required" });
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        input {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            background: #222;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            background: white;
+            color: black;
+            border: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .typing {
+            font-size: 13px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="chat-wrapper">
+    <div class="header">SERA AI</div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="input-area">
+        <input id="userInput" type="text" placeholder="اكتب سؤالك هنا عن بشرتك…">
+        <button onclick="sendMessage()">إرسال</button>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://sera-ai-backend-qhrd.onrender.com/ask";
+
+    function addMessage(text, sender) {
+        const msgContainer = document.getElementById("messages");
+
+        const msg = document.createElement("div");
+        msg.classList.add("msg", sender);
+        msg.innerText = text;
+
+        msgContainer.appendChild(msg);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: "OPENAI_API_KEY is not configured" });
+    async function sendMessage() {
+        const input = document.getElementById("userInput");
+        const text = input.value.trim();
+
+        if (text === "") return;
+
+        addMessage(text, "user");
+        input.value = "";
+
+        addMessage("يكتب الآن…", "typing");
+
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text })
+        });
+
+        const data = await response.json();
+
+        document.querySelector(".typing")?.remove();
+
+        addMessage(data.reply, "ai");
     }
+</script>
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are SERA AI, an expert skincare and beauty assistant. Respond in Arabic unless the user writes in English.",
-        },
-        { role: "user", content: message }
-      ]
-    });
-
-    const reply = completion.choices[0].message.content;
-
-    res.json({ reply });
-  } catch (error) {
-    console.error("Error in /ask:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-// تشغيل السيرفر
-app.listen(PORT, () => {
-  console.log(`SERA AI backend listening on port ${PORT}`);
-});
+</body>
+</html>
