@@ -30,7 +30,6 @@ app.get("/ping", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// مسار الذكاء الأساسي /ask
 app.post("/ask", async (req, res) => {
   try {
     const { message } = req.body;
@@ -40,32 +39,29 @@ app.post("/ask", async (req, res) => {
     }
 
     if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: "OPENAI_API_KEY not configured" });
+      return res.status(500).json({ error: "OPENAI_API_KEY is not configured" });
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content:
-            "You are SERA AI, an expert skincare and beauty assistant. You answer in Arabic by default unless the user writes in English. Ask simple clarifying questions if needed, then suggest routines and suitable products in a friendly, practical tone.",
+            "You are SERA AI, an expert skincare and beauty assistant. Respond in Arabic unless the user writes in English.",
         },
-        { role: "user", content: message },
-      ],
+        { role: "user", content: message }
+      ]
     });
 
-    const reply =
-      completion.choices?.[0]?.message?.content ||
-      "عذراً، حدث خطأ ولم أستطع إنشاء رد الآن.";
+    const reply = completion.choices[0].message.content;
 
     res.json({ reply });
   } catch (error) {
-    console.error("Error in /ask:", error.response?.data || error.message || error);
+    console.error("Error in /ask:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 // تشغيل السيرفر
 app.listen(PORT, () => {
   console.log(`SERA AI backend listening on port ${PORT}`);
