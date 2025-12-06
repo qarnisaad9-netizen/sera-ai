@@ -1,10 +1,14 @@
 {
   "name": "sera-ai-backend",
   "version": "1.0.0",
-  "description": "SERA AI backend - skincare AI assistant",
+  "description": "SERA AI backend",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "cors": "^2.8.5",
