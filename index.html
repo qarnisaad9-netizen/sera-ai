@@ -1,147 +1,158 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SERA AI 💎</title>
-    <style>
-        body {
-            margin: 0;
-            background: #000;
-            font-family: "Tahoma", sans-serif;
-            color: white;
-            display: flex;
-            justify-content: center;
-            padding: 20px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SERA AI</title>
 
-        .chat-container {
-            width: 100%;
-            max-width: 600px;
-            background: #111;
-            border-radius: 15px;
-            padding: 15px;
-            border: 2px solid #00aaff;
-        }
+<style>
+body {
+  margin: 0;
+  background: #ffffff;
+  font-family: "Tahoma", sans-serif;
+  color: #333;
+}
 
-        h1 {
-            text-align: center;
-            color: #00aaff;
-            margin-bottom: 20px;
-        }
+/* العنوان */
+.header {
+  text-align: center;
+  padding: 20px;
+  font-size: 26px;
+  font-weight: bold;
+  color: #0a84ff;
+}
 
-        .button {
-            background: #008CFF;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            font-size: 18px;
-        }
+/* صندوق الشات */
+.chat-box {
+  width: 100%;
+  max-width: 650px;
+  height: 80vh;
+  margin: auto;
+  padding: 15px;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: #f7f7f7;
+  box-shadow: 0 0 10px #ddd;
+}
 
-        .messages {
-            height: 400px;
-            overflow-y: auto;
-            background: #000;
-            border-radius: 10px;
-            padding: 10px;
-        }
+/* فقاعات الرسائل */
+.msg {
+  padding: 12px 16px;
+  margin: 8px 0;
+  max-width: 80%;
+  border-radius: 12px;
+  font-size: 17px;
+  line-height: 1.6;
+}
 
-        .bubble {
-            padding: 10px 14px;
-            margin: 10px 0;
-            border-radius: 12px;
-            max-width: 80%;
-        }
+/* رسالة المستخدم */
+.me {
+  background: #0a84ff;
+  color: white;
+  margin-left: auto;
+}
 
-        .you {
-            background: #008CFF;
-            margin-left: auto;
-        }
+/* رسالة الذكاء */
+.ai {
+  background: #eaeaea;
+  color: #333;
+}
 
-        .ai {
-            background: #222;
-            margin-right: auto;
-        }
+/* صندوق الإدخال */
+.input-area {
+  display: flex;
+  width: 100%;
+  max-width: 650px;
+  margin: 15px auto;
+}
 
-        .input-area {
-            display: flex;
-            margin-top: 15px;
-        }
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 17px;
+}
 
-        input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            font-size: 16px;
-        }
-
-        button {
-            background: #008CFF;
-            padding: 12px 20px;
-            margin-left: 10px;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
+button {
+  width: 90px;
+  margin-right: 8px;
+  background: #0a84ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 17px;
+}
+</style>
 </head>
 
 <body>
-    <div class="chat-container">
-        <h1>SERA AI 💎</h1>
 
-        <div class="button" onclick="sendQuick('ابغى روتين العناية بالشعر')">
-            ابغى روتين العناية بالشعر
-        </div>
+<div class="header">SERA AI 💎</div>
 
-        <div class="messages" id="messages"></div>
+<div class="chat-box" id="chatBox"></div>
 
-        <div class="input-area">
-            <input id="userInput" placeholder="اكتب رسالتك هنا...">
-            <button onclick="sendMessage()">إرسال</button>
-        </div>
-    </div>
+<div class="input-area">
+  <input id="msgInput" placeholder="اكتب سؤالك هنا...">
+  <button onclick="sendMessage()">إرسال</button>
+</div>
 
 <script>
-    const backendURL = "https://sera-ai-backend-qhrd.onrender.com/ask";
+const backendURL = "https://sera-ai-backend-qhrd.onrender.com/ask";
 
-    function addMessage(text, sender) {
-        const messages = document.getElementById("messages");
-        const bubble = document.createElement("div");
-        bubble.className = "bubble " + sender;
-        bubble.textContent = text;
-        messages.appendChild(bubble);
-        messages.scrollTop = messages.scrollHeight;
+/* إضافة رسالة */
+function addMessage(text, sender) {
+  const box = document.getElementById("chatBox");
+  const msg = document.createElement("div");
+  msg.className = "msg " + sender;
+
+  box.appendChild(msg);
+  box.scrollTop = box.scrollHeight;
+
+  typeText(msg, text);
+}
+
+/* تأثير الكتابة typing effect */
+function typeText(element, text) {
+  let i = 0;
+  const speed = 20;
+
+  function type() {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+      setTimeout(type, speed);
     }
+  }
 
-    async function sendMessage() {
-        const input = document.getElementById("userInput");
-        const text = input.value;
-        if (!text) return;
+  type();
+}
 
-        addMessage(text, "you");
-        input.value = "";
+/* إرسال الرسالة */
+async function sendMessage() {
+  const input = document.getElementById("msgInput");
+  const text = input.value.trim();
+  if (!text) return;
 
-        const res = await fetch(backendURL, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ content: text })
-        });
+  addMessage(text, "me");
+  input.value = "";
 
-        const data = await res.json();
-        addMessage(data.reply, "ai");
-    }
+  const response = await fetch(backendURL, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ message: text })
+  });
 
-    function sendQuick(text) {
-        document.getElementById("userInput").value = text;
-        sendMessage();
-    }
+  const data = await response.json();
+
+  // إزالة تنسيقات markdown من الرد
+  const cleanText = data.reply
+    .replace(/\*/g, "")
+    .replace(/[-+#]/g, "")
+    .replace(/\n{2,}/g, "\n");
+
+  addMessage(cleanText, "ai");
+}
 </script>
 
 </body>
