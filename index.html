@@ -17,40 +17,57 @@ body {
 .header {
   text-align: center;
   padding: 20px 10px;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: bold;
   color: #0a84ff;
 }
 
-/* منطقة الشات (زي شات جي بي تي: خلفية بيضا ونص اسود) */
+/* صندوق المحادثة */
 .chat-box {
   width: 100%;
   max-width: 700px;
-  height: 75vh;
+  height: 73vh;
   margin: auto;
-  padding: 10px 15px 0;
+  padding: 15px;
   overflow-y: auto;
   background: #ffffff;
+  box-sizing: border-box;
 }
 
-/* كل رسالة (مجرد نص عادي) */
-.msg {
-  margin: 10px 0;
-  font-size: 17px;
+/* رسالة الذكاء */
+.msg-ai {
+  margin: 15px 0;
+  font-size: 18px;
   line-height: 1.7;
-  white-space: pre-wrap; /* عشان يحترم النزول للسطر والتعداد */
-}
-
-/* تمييز بسيط بين المستخدم والذكاء فقط بالمحاذاة */
-.me {
   text-align: right;
+  white-space: pre-wrap;
 }
 
-.ai {
-  text-align: left;
+/* رسالة المستخدم */
+.msg-user {
+  margin: 15px 0;
+  font-size: 18px;
+  line-height: 1.7;
+  text-align: right;
+  background: #f2f2f2;
+  padding: 12px 15px;
+  border-radius: 10px;
+  width: fit-content;
+  max-width: 90%;
+  margin-left: auto;
+  white-space: pre-wrap;
 }
 
-/* منطقة الإدخال تحت */
+/* مؤشر الكتابة */
+.typing {
+  font-size: 16px;
+  color: #777;
+  margin-top: 10px;
+  text-align: right;
+  font-style: italic;
+}
+
+/* أسفل الشاشة */
 .input-area {
   display: flex;
   width: 100%;
@@ -63,7 +80,7 @@ body {
 input {
   flex: 1;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #ccc;
   font-size: 17px;
 }
@@ -74,8 +91,8 @@ button {
   background: #0a84ff;
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 17px;
+  border-radius: 10px;
+  font-size: 18px;
 }
 </style>
 </head>
@@ -86,6 +103,8 @@ button {
 
 <div class="chat-box" id="chatBox"></div>
 
+<div class="typing" id="typing" style="display:none;">… SERA AI يكتب</div>
+
 <div class="input-area">
   <input id="msgInput" placeholder="اكتب سؤالك هنا...">
   <button onclick="sendMessage()">إرسال</button>
@@ -94,22 +113,22 @@ button {
 <script>
 const backendURL = "https://sera-ai-backend-qhrd.onrender.com/ask";
 
-/* إضافة رسالة للصندوق */
+/* إضافة رسالة */
 function addMessage(text, sender) {
   const box = document.getElementById("chatBox");
   const msg = document.createElement("div");
-  msg.className = "msg " + sender;
 
+  msg.className = sender === "user" ? "msg-user" : "msg-ai";
   box.appendChild(msg);
   box.scrollTop = box.scrollHeight;
 
   typeText(msg, text);
 }
 
-/* تأثير الكتابة حرف حرف */
+/* كتابة تدريجية (typing effect) */
 function typeText(element, text) {
   let i = 0;
-  const speed = 15; // كل ما قلّ الرقم زادت السرعة
+  const speed = 15;
 
   function type() {
     if (i < text.length) {
@@ -128,9 +147,12 @@ async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
 
-  // عرض رسالة المستخدم
-  addMessage(text, "me");
+  // رسالة المستخدم
+  addMessage(text, "user");
   input.value = "";
+
+  // تشغيل مؤشر الكتابة
+  document.getElementById("typing").style.display = "block";
 
   try {
     const response = await fetch(backendURL, {
@@ -141,11 +163,14 @@ async function sendMessage() {
 
     const data = await response.json();
 
-    // هنا نترك التنسيق كما هو (التعداد، النقاط، إلخ)
-    const replyText = data.reply || "حصل خطأ غير متوقع، حاول مرة ثانية.";
-    addMessage(replyText, "ai");
+    // إخفاء المؤشر
+    document.getElementById("typing").style.display = "none";
+
+    addMessage(data.reply || "حدث خطأ، حاول مرة أخرى.", "ai");
+
   } catch (e) {
-    addMessage("حصل خطأ في الاتصال بالسيرفر، تأكد أنه شغال في Render.", "ai");
+    document.getElementById("typing").style.display = "none";
+    addMessage("تعذّر الاتصال بالخادم. تأكد من أن Render شغال.", "ai");
   }
 }
 </script>
