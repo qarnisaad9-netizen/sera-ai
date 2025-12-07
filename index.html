@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SERA AI</title>
-
+    <title>SERA AI 💎</title>
     <style>
         body {
             margin: 0;
@@ -22,116 +21,128 @@
             background: #111;
             border-radius: 15px;
             padding: 15px;
-            border: 1px solid #333;
-            height: 90vh;
-            display: flex;
-            flex-direction: column;
+            border: 2px solid #00aaff;
         }
 
-        .chat-header {
-            font-size: 22px;
+        h1 {
             text-align: center;
-            font-weight: bold;
-            margin-bottom: 10px;
             color: #00aaff;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            background: #008CFF;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            font-size: 18px;
         }
 
         .messages {
-            flex: 1;
+            height: 400px;
             overflow-y: auto;
+            background: #000;
+            border-radius: 10px;
             padding: 10px;
         }
 
         .bubble {
+            padding: 10px 14px;
+            margin: 10px 0;
+            border-radius: 12px;
             max-width: 80%;
-            padding: 10px 15px;
-            border-radius: 15px;
-            margin-bottom: 10px;
-            line-height: 1.5;
-            font-size: 15px;
         }
 
         .you {
-            background: #007bff;
-            color: #fff;
-            align-self: flex-start;
+            background: #008CFF;
+            margin-left: auto;
         }
 
-        .bot {
+        .ai {
             background: #222;
-            color: #fff;
-            align-self: flex-end;
-            border: 1px solid #444;
+            margin-right: auto;
         }
 
         .input-area {
             display: flex;
-            gap: 10px;
+            margin-top: 15px;
         }
 
         input {
             flex: 1;
             padding: 12px;
-            border-radius: 10px;
+            border-radius: 8px;
             border: none;
             font-size: 16px;
         }
 
         button {
-            padding: 12px 18px;
-            background: #007bff;
+            background: #008CFF;
+            padding: 12px 20px;
+            margin-left: 10px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             color: white;
             font-size: 16px;
+            cursor: pointer;
         }
     </style>
 </head>
 
 <body>
     <div class="chat-container">
+        <h1>SERA AI 💎</h1>
 
-        <div class="chat-header">💎 SERA AI</div>
+        <div class="button" onclick="sendQuick('ابغى روتين العناية بالشعر')">
+            ابغى روتين العناية بالشعر
+        </div>
 
         <div class="messages" id="messages"></div>
 
         <div class="input-area">
-            <input id="userInput" type="text" placeholder="اكتب رسالتك هنا..." />
+            <input id="userInput" placeholder="اكتب رسالتك هنا...">
             <button onclick="sendMessage()">إرسال</button>
         </div>
     </div>
 
-    <script>
-        const backendURL = "https://sera-ai-backend-qhrd.onrender.com";
+<script>
+    const backendURL = "https://sera-ai-backend-qhrd.onrender.com/ask";
 
-        function addMessage(text, sender) {
-            const messages = document.getElementById("messages");
-            const bubble = document.createElement("div");
-            bubble.className = "bubble " + sender;
-            bubble.textContent = text;
-            messages.appendChild(bubble);
-            messages.scrollTop = messages.scrollHeight;
-        }
+    function addMessage(text, sender) {
+        const messages = document.getElementById("messages");
+        const bubble = document.createElement("div");
+        bubble.className = "bubble " + sender;
+        bubble.textContent = text;
+        messages.appendChild(bubble);
+        messages.scrollTop = messages.scrollHeight;
+    }
 
-        async function sendMessage() {
-            const input = document.getElementById("userInput");
-            const text = input.value.trim();
+    async function sendMessage() {
+        const input = document.getElementById("userInput");
+        const text = input.value;
+        if (!text) return;
 
-            if (!text) return;  // منع إرسال رسائل فارغة
+        addMessage(text, "you");
+        input.value = "";
 
-            addMessage(text, "you");
-            input.value = "";
+        const res = await fetch(backendURL, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ content: text })
+        });
 
-            const res = await fetch(backendURL + "/ask", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: text }) // اسم المتغير الصحيح
-            });
+        const data = await res.json();
+        addMessage(data.reply, "ai");
+    }
 
-            const data = await res.json();
-            addMessage(data.reply, "bot");
-        }
-    </script>
+    function sendQuick(text) {
+        document.getElementById("userInput").value = text;
+        sendMessage();
+    }
+</script>
 
 </body>
 </html>
