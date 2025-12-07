@@ -1,168 +1,161 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SERA AI</title>
 
   <style>
     body {
-      margin: 0;
       background: #ffffff;
       font-family: "Tahoma", sans-serif;
+      margin: 0;
+      padding: 0;
+      direction: rtl;
+      text-align: right;
     }
 
-    /* العنوان */
     .header {
       text-align: center;
-      padding: 25px 0;
-      font-size: 28px;
+      padding: 25px;
+      font-size: 30px;
       font-weight: bold;
-      color: #000;
     }
 
-    /* صندوق المحادثة */
-    .chat-container {
+    .header span {
+      color: black;
+    }
+
+    #chat {
       width: 100%;
       max-width: 700px;
       margin: auto;
       padding: 20px;
-      box-sizing: border-box;
     }
 
-    /* الرسائل */
-    .user-message, .bot-message {
-      padding: 14px 18px;
-      margin: 10px 0;
-      border-radius: 12px;
-      font-size: 17px;
+    .msg {
+      margin: 12px 0;
+      padding: 12px 18px;
+      border-radius: 14px;
+      max-width: 80%;
       line-height: 1.7;
-      direction: rtl;
-      text-align: right;
       white-space: pre-line;
     }
 
-    .user-message {
-      background: #f1f1f1;
-      color: #000;
-      width: fit-content;
+    .user {
+      background: #eaeaea;
       margin-left: auto;
     }
 
-    .bot-message {
+    .bot {
       background: #ffffff;
-      border: 1px solid #e5e5e5;
-      color: #000;
-      width: fit-content;
-      max-width: 100%;
+      border: 1px solid #ddd;
+      margin-right: auto;
     }
 
-    /* شريط الإدخال */
+    .typing {
+      opacity: 0.6;
+      font-style: italic;
+    }
+
     .input-area {
       display: flex;
       gap: 10px;
-      margin-top: 15px;
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      padding: 15px;
+      background: white;
+      border-top: 1px solid #ddd;
     }
 
-    input {
+    #input {
       flex: 1;
-      padding: 14px;
-      font-size: 17px;
-      border-radius: 10px;
+      padding: 15px;
+      border-radius: 12px;
       border: 1px solid #ccc;
-      outline: none;
-    }
-
-    button {
-      background: #000;
-      color: #fff;
-      border: none;
-      padding: 0 20px;
       font-size: 18px;
-      border-radius: 10px;
-      cursor: pointer;
     }
 
-    /* مؤشر (يكتب الآن...) */
-    .typing {
-      font-size: 15px;
-      color: #777;
-      margin: 5px 0;
+    #send {
+      background: black;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 12px;
+      border: none;
+      font-size: 18px;
     }
-
   </style>
 </head>
 
 <body>
 
-  <div class="header">🖤 SERA AI</div>
-
-  <div class="chat-container">
-    <div id="messages"></div>
-    <div id="typing" class="typing"></div>
-
-    <div class="input-area">
-      <input id="userInput" placeholder="اكتب سؤالك هنا..." />
-      <button onclick="sendMessage()">إرسال</button>
-    </div>
+  <div class="header">
+    SERA AI 🖤
   </div>
 
+  <div id="chat"></div>
 
-<script>
-  const backendURL = "https://sera-ai-backend-qhrd.onrender.com/ask";
+  <div class="input-area">
+    <button id="send">إرسال</button>
+    <input id="input" placeholder="اكتب سؤالك هنا..." />
+  </div>
 
-  // تنظيف Markdown
-  function cleanMarkdown(text) {
-    return text
-      .replace(/###/g, "")
-      .replace(/\*\*/g, "")
-      .replace(/\*/g, "• ")
-      .replace(/-/g, "• ")
-      .trim();
-  }
+  <script>
+    const backendURL = "https://sera-ai-backend-qhrd.onrender.com/ask";
 
-  // إضافة الرسائل
-  function addMessage(text, sender) {
-    const messages = document.getElementById("messages");
-    const bubble = document.createElement("div");
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const send = document.getElementById("send");
 
-    bubble.className = sender === "user" ? "user-message" : "bot-message";
-    bubble.textContent = cleanMarkdown(text);
-
-    messages.appendChild(bubble);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  // إرسال الرسائل
-  async function sendMessage() {
-    const input = document.getElementById("userInput");
-    const text = input.value.trim();
-    if (!text) return;
-
-    addMessage(text, "user");
-    input.value = "";
-
-    document.getElementById("typing").textContent = "الذكاء الاصطناعي يكتب الآن…";
-
-    try {
-      const res = await fetch(backendURL, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ question: text })
-      });
-
-      const data = await res.json();
-      document.getElementById("typing").textContent = "";
-
-      const reply = cleanMarkdown(data.reply || "خطأ غير متوقع.");
-      addMessage(reply, "bot");
-
-    } catch (error) {
-      document.getElementById("typing").textContent = "";
-      addMessage("حدث خطأ في الاتصال بالخادم.", "bot");
+    function appendMessage(text, sender) {
+      const div = document.createElement("div");
+      div.className = "msg " + sender;
+      div.textContent = text;
+      chat.appendChild(div);
+      window.scrollTo(0, document.body.scrollHeight);
     }
-  }
-</script>
 
+    function appendTyping() {
+      const div = document.createElement("div");
+      div.id = "typing";
+      div.className = "msg bot typing";
+      div.textContent = "يكتب الآن...";
+      chat.appendChild(div);
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function removeTyping() {
+      const t = document.getElementById("typing");
+      if (t) t.remove();
+    }
+
+    send.onclick = async () => {
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendMessage(text, "user");
+      input.value = "";
+
+      appendTyping();
+
+      try {
+        const res = await fetch(backendURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text }),
+        });
+
+        const data = await res.json();
+
+        removeTyping();
+        appendMessage(data.reply, "bot");
+      } catch (e) {
+        removeTyping();
+        appendMessage("خطأ غير متوقع.", "bot");
+      }
+    };
+  </script>
 </body>
 </html>
