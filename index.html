@@ -1,179 +1,343 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SERA AI</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SERA AI</title>
 
-<style>
-body {
-  margin: 0;
-  background: #ffffff;
-  font-family: "Tahoma", sans-serif;
-  color: #000;
-}
+  <style>
+    body {
+      margin: 0;
+      background: #ffffff;
+      font-family: "Tahoma", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
 
-/* العنوان */
-.header {
-  text-align: center;
-  padding: 20px 10px;
-  font-size: 28px;
-  font-weight: bold;
-  color: #0a84ff;
-}
+    /* شريط علوي */
+    header {
+      border-bottom: 1px solid #eee;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-/* صندوق المحادثة */
-.chat-box {
-  width: 100%;
-  max-width: 700px;
-  height: 73vh;
-  margin: auto;
-  padding: 15px;
-  overflow-y: auto;
-  background: #ffffff;
-  box-sizing: border-box;
-}
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+      color: #000;
+    }
 
-/* رسالة الذكاء */
-.msg-ai {
-  margin: 15px 0;
-  font-size: 18px;
-  line-height: 1.7;
-  text-align: right;
-  white-space: pre-wrap;
-}
+    /* حاوية الشات */
+    .chat-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 10px 16px 0;
+      box-sizing: border-box;
+    }
 
-/* رسالة المستخدم */
-.msg-user {
-  margin: 15px 0;
-  font-size: 18px;
-  line-height: 1.7;
-  text-align: right;
-  background: #f2f2f2;
-  padding: 12px 15px;
-  border-radius: 10px;
-  width: fit-content;
-  max-width: 90%;
-  margin-left: auto;
-  white-space: pre-wrap;
-}
+    /* منطقة الرسائل */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 0 5px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-/* مؤشر الكتابة */
-.typing {
-  font-size: 16px;
-  color: #777;
-  margin-top: 10px;
-  text-align: right;
-  font-style: italic;
-}
+    /* رسالة البوت */
+    .bot-message {
+      align-self: flex-start;
+      background: #ffffff;
+      border: 1px solid #e1e1e1;
+      border-radius: 14px;
+      padding: 12px 16px;
+      max-width: 80%;
+      font-size: 16px;
+      line-height: 1.7;
+      white-space: pre-line; /* يحافظ على النقاط والتنقيط */
+    }
 
-/* أسفل الشاشة */
-.input-area {
-  display: flex;
-  width: 100%;
-  max-width: 700px;
-  margin: 10px auto 15px;
-  padding: 0 10px;
-  box-sizing: border-box;
-}
+    /* رسالة المستخدم */
+    .user-message {
+      align-self: flex-end;
+      background: #f1f1f1;
+      border-radius: 14px;
+      padding: 12px 16px;
+      max-width: 80%;
+      font-size: 16px;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
 
-input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  font-size: 17px;
-}
+    /* مواضيع سريعة */
+    .quick-topics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
 
-button {
-  width: 90px;
-  margin-right: 8px;
-  background: #0a84ff;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 18px;
-}
-</style>
+    .quick-topics button {
+      border: 1px solid #ddd;
+      background: #fafafa;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .quick-topics button:hover {
+      background: #f0f0f0;
+    }
+
+    /* مؤشر جاري الكتابة */
+    .typing {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      color: #777;
+      margin-top: 4px;
+    }
+
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #777;
+      animation: blink 1.4s infinite;
+    }
+
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0% { opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { opacity: 0.2; }
+    }
+
+    /* منطقة الإدخال */
+    .input-area {
+      border-top: 1px solid #eee;
+      padding: 10px 16px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      box-sizing: border-box;
+      background: #fff;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .input-area input:focus {
+      border-color: #000;
+    }
+
+    /* زر إرسال أسود دائري */
+    .send-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      background: #000;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .send-btn:hover {
+      background: #333;
+    }
+
+    /* زر مايكروفون (مستقبلًا لو حاب نفعل التسجيل الصوتي) */
+    .mic-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: none;
+      background: #007aff;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .mic-btn:hover {
+      background: #0060c0;
+    }
+
+    @media (max-width: 600px) {
+      .bot-message,
+      .user-message {
+        max-width: 90%;
+        font-size: 15px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="header">💎 SERA AI</div>
+  <header>
+    <h1>SERA AI 🖤</h1>
+  </header>
 
-<div class="chat-box" id="chatBox"></div>
+  <div class="chat-wrapper">
+    <div class="messages" id="messages">
+      <!-- رسالة ترحيبية أولى -->
+      <div class="bot-message">
+        أهلاً 👋  
+        أنا SERA AI، مساعدك الذكي للعناية بالبشرة والشعر والجسم.  
+        اكتب مشكلتك أو هدفك، أو اختر أحد المواضيع السريعة بالأسفل.
+      </div>
 
-<div class="typing" id="typing" style="display:none;">… SERA AI يكتب</div>
+      <div class="quick-topics">
+        <button onclick="quickAsk('ابغى روتين يومي للبشرة المختلطة')">
+          روتين للبشرة المختلطة
+        </button>
+        <button onclick="quickAsk('أعاني من حب شباب في الوجه، كيف أتعامل معه؟')">
+          حب الشباب
+        </button>
+        <button onclick="quickAsk('ابغى روتين لتفتيح وتوحيد لون الجسم')">
+          توحيد لون الجسم
+        </button>
+        <button onclick="quickAsk('شعري جاف ويتساقط، ابغى روتين عناية كامل')">
+          روتين للشعر الجاف
+        </button>
+      </div>
+    </div>
 
-<div class="input-area">
-  <input id="msgInput" placeholder="اكتب سؤالك هنا...">
-  <button onclick="sendMessage()">إرسال</button>
-</div>
+    <!-- مؤشر الكتابة -->
+    <div id="typing" class="typing" style="display:none;">
+      SERA AI يكتب
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
 
-<script>
-const backendURL = "https://sera-ai-backend-qhrd.onrender.com/ask";
+  <div class="input-area">
+    <button class="mic-btn" onclick="startMic()">🎤</button>
+    <input
+      type="text"
+      id="userInput"
+      placeholder="اكتب سؤالك هنا واضغط إرسال أو إنتر..."
+    />
+    <button class="send-btn" onclick="sendMessage()">➤</button>
+  </div>
 
-/* إضافة رسالة */
-function addMessage(text, sender) {
-  const box = document.getElementById("chatBox");
-  const msg = document.createElement("div");
+  <script>
+    const backendURL = "https://sera-ai-backend-qhrd.onrender.com/ask";
 
-  msg.className = sender === "user" ? "msg-user" : "msg-ai";
-  box.appendChild(msg);
-  box.scrollTop = box.scrollHeight;
-
-  typeText(msg, text);
-}
-
-/* كتابة تدريجية (typing effect) */
-function typeText(element, text) {
-  let i = 0;
-  const speed = 15;
-
-  function type() {
-    if (i < text.length) {
-      element.textContent += text.charAt(i);
-      i++;
-      setTimeout(type, speed);
+    function addMessage(text, sender) {
+      const messages = document.getElementById("messages");
+      const msg = document.createElement("div");
+      msg.className = sender === "user" ? "user-message" : "bot-message";
+      msg.textContent = text;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
     }
-  }
 
-  type();
-}
+    function showTyping() {
+      const t = document.getElementById("typing");
+      t.style.display = "flex";
+    }
 
-/* إرسال الرسالة */
-async function sendMessage() {
-  const input = document.getElementById("msgInput");
-  const text = input.value.trim();
-  if (!text) return;
+    function hideTyping() {
+      const t = document.getElementById("typing");
+      t.style.display = "none";
+    }
 
-  // رسالة المستخدم
-  addMessage(text, "user");
-  input.value = "";
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const text = input.value.trim();
+      if (!text) return;
 
-  // تشغيل مؤشر الكتابة
-  document.getElementById("typing").style.display = "block";
+      addMessage(text, "user");
+      input.value = "";
+      input.focus();
 
-  try {
-    const response = await fetch(backendURL, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ message: text })
+      showTyping();
+
+      try {
+        const res = await fetch(backendURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text })
+        });
+
+        const data = await res.json();
+        hideTyping();
+
+        const reply = data.reply || "حدث خطأ غير متوقع، حاول مرة أخرى.";
+        addMessage(reply, "bot");
+      } catch (e) {
+        hideTyping();
+        addMessage("تعذّر الاتصال بالسيرفر. تأكد أن الخدمة في Render تعمل.", "bot");
+      }
+    }
+
+    function quickAsk(text) {
+      const input = document.getElementById("userInput");
+      input.value = text;
+      sendMessage();
+    }
+
+    // دعم الضغط على إنتر للإرسال
+    document.getElementById("userInput").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+      }
     });
 
-    const data = await response.json();
-
-    // إخفاء المؤشر
-    document.getElementById("typing").style.display = "none";
-
-    addMessage(data.reply || "حدث خطأ، حاول مرة أخرى.", "ai");
-
-  } catch (e) {
-    document.getElementById("typing").style.display = "none";
-    addMessage("تعذّر الاتصال بالخادم. تأكد من أن Render شغال.", "ai");
-  }
-}
-</script>
+    // زر المايكروفون (بسيط كبداية)
+    function startMic() {
+      if (!("webkitSpeechRecognition" in window)) {
+        alert("متصفحك لا يدعم إدخال الصوت مباشرة.");
+        return;
+      }
+      const rec = new webkitSpeechRecognition();
+      rec.lang = "ar-SA";
+      rec.start();
+      rec.onresult = function (event) {
+        const transcript = event.results[0][0].transcript;
+        const input = document.getElementById("userInput");
+        input.value = transcript;
+        input.focus();
+      };
+    }
+  </script>
 
 </body>
 </html>
