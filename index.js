@@ -8,38 +8,41 @@ app.use(express.json());
 
 // OpenAI Client
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Basic test route
+// Test Route
 app.get("/", (req, res) => {
   res.send("SERA AI backend is running!");
 });
 
-// Ask route
+// Ask Route
 app.post("/ask", async (req, res) => {
   try {
     const userMessage = req.body.message;
 
+    // Validate input
+    if (!userMessage || userMessage.trim() === "") {
+      return res.status(400).json({ reply: "الرجاء كتابة رسالة صحيحة." });
+    }
+
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are SERA AI assistant." },
-        { role: "user", content: userMessage }
-      ]
+        {
+          role: "system",
+          content:
+            "أنت مساعد ذكي متخصص في العناية بالبشرة والشعر. ردودك تكون متناسقة وواضحة وسهلة الفهم.",
+        },
+        { role: "user", content: userMessage },
+      ],
     });
 
-    const reply = completion.choices[0].message.content;
-    res.json({ reply });
-
+    res.json({ reply: completion.choices[0].message.content });
   } catch (error) {
-    console.error("Error:", error.response?.data || error.message);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ reply: "خطأ غير متوقع." });
   }
 });
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`SERA AI backend running on port ${PORT}`);
-});
+// Server
+app.listen(10000, () => console.log("SERA AI backend running on port 10000"));
