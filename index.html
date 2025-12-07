@@ -10,60 +10,54 @@ body {
   margin: 0;
   background: #ffffff;
   font-family: "Tahoma", sans-serif;
-  color: #333;
+  color: #000;
 }
 
 /* العنوان */
 .header {
   text-align: center;
-  padding: 20px;
+  padding: 20px 10px;
   font-size: 26px;
   font-weight: bold;
   color: #0a84ff;
 }
 
-/* صندوق الشات */
+/* منطقة الشات (زي شات جي بي تي: خلفية بيضا ونص اسود) */
 .chat-box {
   width: 100%;
-  max-width: 650px;
-  height: 80vh;
+  max-width: 700px;
+  height: 75vh;
   margin: auto;
-  padding: 15px;
+  padding: 10px 15px 0;
   overflow-y: auto;
-  border-radius: 12px;
-  background: #f7f7f7;
-  box-shadow: 0 0 10px #ddd;
+  background: #ffffff;
 }
 
-/* فقاعات الرسائل */
+/* كل رسالة (مجرد نص عادي) */
 .msg {
-  padding: 12px 16px;
-  margin: 8px 0;
-  max-width: 80%;
-  border-radius: 12px;
+  margin: 10px 0;
   font-size: 17px;
-  line-height: 1.6;
+  line-height: 1.7;
+  white-space: pre-wrap; /* عشان يحترم النزول للسطر والتعداد */
 }
 
-/* رسالة المستخدم */
+/* تمييز بسيط بين المستخدم والذكاء فقط بالمحاذاة */
 .me {
-  background: #0a84ff;
-  color: white;
-  margin-left: auto;
+  text-align: right;
 }
 
-/* رسالة الذكاء */
 .ai {
-  background: #eaeaea;
-  color: #333;
+  text-align: left;
 }
 
-/* صندوق الإدخال */
+/* منطقة الإدخال تحت */
 .input-area {
   display: flex;
   width: 100%;
-  max-width: 650px;
-  margin: 15px auto;
+  max-width: 700px;
+  margin: 10px auto 15px;
+  padding: 0 10px;
+  box-sizing: border-box;
 }
 
 input {
@@ -88,7 +82,7 @@ button {
 
 <body>
 
-<div class="header">SERA AI 💎</div>
+<div class="header">💎 SERA AI</div>
 
 <div class="chat-box" id="chatBox"></div>
 
@@ -100,7 +94,7 @@ button {
 <script>
 const backendURL = "https://sera-ai-backend-qhrd.onrender.com/ask";
 
-/* إضافة رسالة */
+/* إضافة رسالة للصندوق */
 function addMessage(text, sender) {
   const box = document.getElementById("chatBox");
   const msg = document.createElement("div");
@@ -112,10 +106,10 @@ function addMessage(text, sender) {
   typeText(msg, text);
 }
 
-/* تأثير الكتابة typing effect */
+/* تأثير الكتابة حرف حرف */
 function typeText(element, text) {
   let i = 0;
-  const speed = 20;
+  const speed = 15; // كل ما قلّ الرقم زادت السرعة
 
   function type() {
     if (i < text.length) {
@@ -134,24 +128,25 @@ async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
 
+  // عرض رسالة المستخدم
   addMessage(text, "me");
   input.value = "";
 
-  const response = await fetch(backendURL, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ message: text })
-  });
+  try {
+    const response = await fetch(backendURL, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ message: text })
+    });
 
-  const data = await response.json();
+    const data = await response.json();
 
-  // إزالة تنسيقات markdown من الرد
-  const cleanText = data.reply
-    .replace(/\*/g, "")
-    .replace(/[-+#]/g, "")
-    .replace(/\n{2,}/g, "\n");
-
-  addMessage(cleanText, "ai");
+    // هنا نترك التنسيق كما هو (التعداد، النقاط، إلخ)
+    const replyText = data.reply || "حصل خطأ غير متوقع، حاول مرة ثانية.";
+    addMessage(replyText, "ai");
+  } catch (e) {
+    addMessage("حصل خطأ في الاتصال بالسيرفر، تأكد أنه شغال في Render.", "ai");
+  }
 }
 </script>
 
