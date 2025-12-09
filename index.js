@@ -13,7 +13,7 @@ const client = new OpenAI({
 
 // Test Route
 app.get("/", (req, res) => {
-  res.send("SERA AI backend is running!");
+  res.send("SERA AI backend is running");
 });
 
 // Ask Route
@@ -21,9 +21,10 @@ app.post("/ask", async (req, res) => {
   try {
     const userMessage = req.body.message;
 
-    // Validate input
-    if (!userMessage || userMessage.trim() === "") {
-      return res.status(400).json({ reply: "الرجاء كتابة رسالة صحيحة." });
+    if (!userMessage || userMessage.trim().length === 0) {
+      return res.status(400).json({
+        reply: "الرسالة المطلوبة فارغة.",
+      });
     }
 
     const completion = await client.chat.completions.create({
@@ -31,18 +32,26 @@ app.post("/ask", async (req, res) => {
       messages: [
         {
           role: "system",
-          content:
-            "أنت مساعد ذكي متخصص في العناية بالبشرة والشعر. ردودك تكون متناسقة وواضحة وسهلة الفهم.",
+          content: "أجب بطريقة واضحة وسهلة الفهم.",
         },
-        { role: "user", content: userMessage },
+        {
+          role: "user",
+          content: userMessage,
+        },
       ],
     });
 
     res.json({ reply: completion.choices[0].message.content });
   } catch (error) {
-    res.status(500).json({ reply: "خطأ غير متوقع." });
+    console.error("Error in /ask:", error);
+    res.status(500).json({
+      reply: "حدث خطأ في الخادم.",
+    });
   }
 });
 
 // Server
-app.listen(10000, () => console.log("SERA AI backend running on port 10000"));
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`SERA AI backend running on port ${PORT}`);
+});
