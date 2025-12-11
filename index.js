@@ -1,17 +1,29 @@
+// ===============================
+//      SERA AI BACKEND (NEW)
+// ===============================
+
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
+import fs from "fs";
+import { scrapeM5azn } from "./scraper/m5azn.js";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-
-// Test Route
+// ===============================
+//        HOME ROUTE
+// ===============================
 app.get("/", (req, res) => {
-  res.send("SERA AI backend is running");
+  res.send("SERA AI Backend is Running 🔥");
 });
 
-// Ask Route
+// ===============================
+//        AI ASK (Using fetch)
+// ===============================
 app.post("/ask", async (req, res) => {
   try {
     const userMessage = req.body.message;
@@ -22,21 +34,25 @@ app.post("/ask", async (req, res) => {
       });
     }
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "أجب بطريقة واضحة وسهلة الفهم.",
-        },
-        {
-          role: "user",
-          content: userMessage,
-        },
-      ],
+    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "أنت مساعد ذكي من SERA AI." },
+          { role: "user", content: userMessage },
+        ],
+      }),
     });
 
-    res.json({ reply: completion.choices[0].message.content });
+    const data = await aiResponse.json();
+    const reply = data.choices?.[0]?.message?.content || "No reply";
+
+    res.json({ reply });
   } catch (error) {
     console.error("Error in /ask:", error);
     res.status(500).json({
@@ -45,7 +61,36 @@ app.post("/ask", async (req, res) => {
   }
 });
 
-// Server
+// ===============================
+//  UPDATE M5AZN PRODUCTS ROUTE
+// ===============================
+app.get("/update-m5azn-products", async (req, res) => {
+  try {
+    const products = await scrapeM5azn();
+
+    fs.writeFileSync(
+      "m5azn-products.json",
+      JSON.stringify(products, null, 2),
+      "utf8"
+    );
+
+    res.json({
+      ok: true,
+      count: products.length,
+      message: "Products updated successfully",
+    });
+  } catch (error) {
+    console.error("Scrape Error:", error);
+    res.status(500).json({
+      ok: false,
+      error: error.message,
+    });
+  }
+});
+
+// ===============================
+//       START SERVER
+// ===============================
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`SERA AI backend running on port ${PORT}`);
