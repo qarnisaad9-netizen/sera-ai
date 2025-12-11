@@ -6,7 +6,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
-import { scrapeM5azn } from "./scraper/m5azn.js";
+import fetch from "node-fetch";
+import { updateM5aznProducts } from "./scraper/m5azn.js";
 
 dotenv.config();
 
@@ -66,7 +67,7 @@ app.post("/ask", async (req, res) => {
 // ===============================
 app.get("/update-m5azn-products", async (req, res) => {
   try {
-    const products = await scrapeM5azn();
+    const products = await updateM5aznProducts();
 
     fs.writeFileSync(
       "m5azn-products.json",
