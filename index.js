@@ -1,15 +1,10 @@
 import express from "express";
 import cors from "cors";
-import OpenAI from "openai";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// OpenAI Client
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 // Test Route
 app.get("/", (req, res) => {
