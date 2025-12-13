@@ -7,7 +7,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
 import { updateM5aznProducts } from "./scraper/m5azn.js";
-
+import { scrapeM5aznLinks } from "./scraper/m5azn-playwright.js";
 dotenv.config();
 
 const app = express();
@@ -87,7 +87,27 @@ app.get("/update-m5azn-products", async (req, res) => {
     });
   }
 });
+// ===============================
+//   BEST M5AZN PRODUCTS (LINKS)
+// ===============================
+app.get("/best-products", async (req, res) => {
+  try {
+    const limit = Number(req.query.limit || 20);
+    const products = await scrapeM5aznLinks(limit);
 
+    res.json({
+      ok: true,
+      count: products.length,
+      products
+    });
+  } catch (error) {
+    console.error("Best Products Error:", error);
+    res.status(500).json({
+      ok: false,
+      error: error.message,
+    });
+  }
+});
 // ===============================
 //       START SERVER
 // ===============================
