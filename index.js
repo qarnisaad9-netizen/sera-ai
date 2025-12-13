@@ -6,7 +6,6 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import fs from "fs";
-import fetch from "node-fetch";
 import { updateM5aznProducts } from "./scraper/m5azn.js";
 
 dotenv.config();
