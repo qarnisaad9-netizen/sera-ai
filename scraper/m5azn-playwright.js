@@ -1,4 +1,4 @@
-import chromium from "playwright-chromium";
+import { chromium } from "playwright-chromium";
 
 export async function scrapeM5aznProducts() {
   let browser;
