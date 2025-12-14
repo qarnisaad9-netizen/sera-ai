@@ -1,33 +1,35 @@
-import { chromium } from "playwright";
+import fetch from "node-fetch";
 
-export async function scrapeM5aznLinks({ limitPerCategory = 10 } = {}) {
-  const browser = await chromium.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
-  });
+/**
+ * تحديث منتجات المخازن (نسخة بدون Playwright)
+ */
+export async function updateM5aznProducts() {
+  try {
+    const url = "https://api.m5azn.com/products"; // مثال – نعدله لاحقًا
 
-  const page = await browser.newPage();
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "User-Agent": "SERA-AI-Bot",
+        "Accept": "application/json"
+      }
+    });
 
-  const CATEGORY_URLS = {
-    skincare: "https://m5azn.com/ar/seller/products",
-  };
+    if (!response.ok) {
+      throw new Error("Failed to fetch M5azn products");
+    }
 
-  const results = {};
+    const data = await response.json();
 
-  for (const [category, url] of Object.entries(CATEGORY_URLS)) {
-    results[category] = [];
-
-    await page.goto(url, { waitUntil: "domcontentloaded" });
-
-    const links = await page.$$eval("a", (els) =>
-      els
-        .map((a) => a.href)
-        .filter((href) => href && href.includes("/products/"))
-    );
-
-    results[category] = [...new Set(links)].slice(0, limitPerCategory);
+    return {
+      ok: true,
+      count: Array.isArray(data) ? data.length : 0,
+      data
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error.message
+    };
   }
-
-  await browser.close();
-  return results;
 }
