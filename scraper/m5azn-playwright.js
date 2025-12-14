@@ -16,11 +16,11 @@ function normalizeUrl(href, baseUrl) {
 }
 
 export async function scrapeM5aznLinks({ limitPerCategory = 20 } = {}) {
-  const browser = await chromium.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
-
+const browser = await chromium.launch({
+  headless: true,
+  executablePath: chromium.executablePath(),
+  args: ["--no-sandbox", "--disable-setuid-sandbox"]
+});
   const page = await browser.newPage();
 
   const result = {
