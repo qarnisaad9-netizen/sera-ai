@@ -1,50 +1,23 @@
-// ===============================
-//      SERA AI BACKEND (CLEAN)
-// ===============================
+import { AlmakhazenLinks } from './scraper/almakhazen-links.js';
 
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT || 10000;
-
-app.use(cors());
-app.use(express.json());
-
-// ===============================
-//        HOME ROUTE
-// ===============================
-app.get("/", (req, res) => {
-  res.send("SERA AI Backend is Running ✅");
-});
-
-// ===============================
-//        HEALTH CHECK
-// ===============================
-app.get("/health", (req, res) => {
-  res.json({
-    ok: true,
-    status: "healthy",
-    time: new Date().toISOString(),
-  });
-});
-
-// ===============================
-//        TEST ROUTE
-// ===============================
-app.get("/test", (req, res) => {
-  res.json({
-    ok: true,
-    message: "Test route works 🚀",
-  });
-});
-
-// ===============================
-//        START SERVER
-// ===============================
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+// أضف هذا المسار
+app.get('/api/almakhazen/products', async (req, res) => {
+  const { q, category = 'العناية بالبشرة' } = req.query;
+  
+  if (!q) {
+    return res.json({
+      error: '⚠️ يرجى إدخال اسم المنتج',
+      example: '/api/almakhazen/products?q=كريم حب الشباب&category=العناية بالبشرة'
+    });
+  }
+  
+  try {
+    const result = await AlmakhazenLinks.getProductLinks(q, category);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      error: 'حدث خطأ في البحث',
+      details: error.message
+    });
+  }
 });
