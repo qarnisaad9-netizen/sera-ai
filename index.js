@@ -1,24 +1,50 @@
+// ===============================
+//      SERA AI BACKEND (CLEAN)
+// ===============================
+
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { updateM5aznProducts } from "./scraper/m5azn-playwright.js";
 
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 10000;
+
 app.use(cors());
 app.use(express.json());
 
+// ===============================
+//        HOME ROUTE
+// ===============================
 app.get("/", (req, res) => {
-  res.send("✅ SERA AI Backend is Running");
+  res.send("SERA AI Backend is Running ✅");
 });
 
-app.get("/best-products", async (req, res) => {
-  const result = await updateM5aznProducts();
-  res.json(result);
+// ===============================
+//        HEALTH CHECK
+// ===============================
+app.get("/health", (req, res) => {
+  res.json({
+    ok: true,
+    status: "healthy",
+    time: new Date().toISOString(),
+  });
 });
 
-const PORT = process.env.PORT || 10000;
+// ===============================
+//        TEST ROUTE
+// ===============================
+app.get("/test", (req, res) => {
+  res.json({
+    ok: true,
+    message: "Test route works 🚀",
+  });
+});
+
+// ===============================
+//        START SERVER
+// ===============================
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
