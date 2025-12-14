@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
-import { SKIN_CONCERNS } from "./config/skinConcerns.js";
+
+import { skinConcerns } from "./config/skinConcerns.js";
+import { nameDictionary } from "./config/nameDictionary.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,73 +15,49 @@ app.use(express.json());
 // ROOT
 // ===============================
 app.get("/", (req, res) => {
-  res.send("SERA AI Backend is running ✅");
+  res.send("SERA AI Backend is running 🔥");
 });
 
 // ===============================
-// SUGGEST PRODUCTS
+// SUGGEST PRODUCTS (LOGIC ONLY)
 // ===============================
 app.post("/suggest", async (req, res) => {
   try {
-    const { concern } = req.body;
+    const userMessage = req.body.message;
 
-    if (!concern) {
-      return res.status(400).json({ error: "Concern is required" });
+    if (!userMessage) {
+      return res.status(400).json({ error: "Message is required" });
     }
 
-    const rule = SKIN_CONCERNS[concern];
-    if (!rule) {
-      return res.status(400).json({ error: "Concern not supported" });
-    }
+    // 1️⃣ Detect skin concern
+    let detectedConcern = null;
 
-    const url = `https://m5azn.com${rule.path}?sort=best_selling`;
-
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0"
+    for (const key in skinConcerns) {
+      const { keywords } = skinConcerns[key];
+      if (keywords.some(k => userMessage.toLowerCase().includes(k))) {
+        detectedConcern = key;
+        break;
       }
-    });
+    }
 
-    const html = await response.text();
+    // 2️⃣ Detect product type
+    let detectedProductType = null;
 
-    // استخراج أسماء وروابط المنتجات (خفيف)
-    const matches = [
-      ...html.matchAll(/href="([^"]+)"[^>]*class="product-name[^"]*"[^>]*>([^<]+)</g)
-    ];
-
-    const products = matches
-      .slice(0, 20)
-      .map(m => {
-        const link = m[1];
-        const name = m[2].trim();
-
-        const brand =
-          rule.brands.find(b =>
-            name.toLowerCase().includes(b.toLowerCase())
-          ) || "Other";
-
-        const type =
-          rule.types.find(t =>
-            name.toLowerCase().includes(t)
-          ) || "other";
-
-        return { name, brand, type, link };
-      })
-      .filter(p => rule.brands.includes(p.brand))
-      .filter(p => rule.types.includes(p.type))
-      .slice(0, 8);
+    for (const type in nameDictionary) {
+      const { synonyms } = nameDictionary[type];
+      if (synonyms.some(s => userMessage.toLowerCase().includes(s))) {
+        detectedProductType = type;
+        break;
+      }
+    }
 
     res.json({
-      concern: rule.ar,
-      count: products.length,
-      products
+      detectedConcern,
+      detectedProductType
     });
 
-  } catch (error) {
-    res.status(500).json({
-      error: "Internal server error",
-      details: error.message
-    });
+  } catch (err) {
+    res.status(500).json({ error: "Server error", details: err.message });
   }
 });
 
