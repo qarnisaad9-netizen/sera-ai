@@ -17,7 +17,7 @@ app.get("/", (req, res) => {
 });
 
 // ===============================
-// SUGGEST PRODUCTS (NO SCRAPER)
+// SUGGEST PRODUCTS
 // ===============================
 app.post("/suggest", async (req, res) => {
   try {
@@ -42,7 +42,7 @@ app.post("/suggest", async (req, res) => {
 
     const html = await response.text();
 
-    // استخراج أسماء وروابط المنتجات (خفيف جدًا)
+    // استخراج أسماء وروابط المنتجات (خفيف)
     const matches = [
       ...html.matchAll(/href="([^"]+)"[^>]*class="product-name[^"]*"[^>]*>([^<]+)</g)
     ];
