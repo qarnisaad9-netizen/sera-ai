@@ -1,5 +1,4 @@
-import { chromium } from "playwright";
-
+import { chromium } from "playwright-chromium";
 const CATEGORY_URLS = {
   skincare: "https://m5azn.com/ar/seller/products/filters?event_id=&sorting=&categories%5B%5D=104&categories%5B%5D=102&categories%5B%5D=133&categories%5B%5D=139&categories%5B%5D=181&categories%5B%5D=182&categories%5B%5D=488&categories%5B%5D=491&categories%5B%5D=492&categories%5B%5D=494",
   makeup: null,
