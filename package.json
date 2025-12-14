@@ -1,33 +1,24 @@
-import { chromium } from "playwright";
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import { updateM5aznProducts } from "./scraper/m5azn-playwright.js";
 
-export async function scrapeM5aznLinks({ limitPerCategory = 10 } = {}) {
-  const browser = await chromium.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
-  });
+dotenv.config();
 
-  const page = await browser.newPage();
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-  const CATEGORY_URLS = {
-    skincare: "https://m5azn.com/ar/seller/products",
-  };
+app.get("/", (req, res) => {
+  res.send("✅ SERA AI Backend is Running");
+});
 
-  const results = {};
+app.get("/best-products", async (req, res) => {
+  const result = await updateM5aznProducts();
+  res.json(result);
+});
 
-  for (const [category, url] of Object.entries(CATEGORY_URLS)) {
-    results[category] = [];
-
-    await page.goto(url, { waitUntil: "domcontentloaded" });
-
-    const links = await page.$$eval("a", (els) =>
-      els
-        .map((a) => a.href)
-        .filter((href) => href && href.includes("/products/"))
-    );
-
-    results[category] = [...new Set(links)].slice(0, limitPerCategory);
-  }
-
-  await browser.close();
-  return results;
-}
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
