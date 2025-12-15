@@ -17,9 +17,9 @@ app.get("/", (req, res) => {
 });
 
 // ===============================
-// SUGGEST (BASED ON SALLA CATEGORIES)
+// SMART SUGGEST (SAFE SEARCH + BRANDS)
 // ===============================
-app.post("/suggest", async (req, res) => {
+app.post("/suggest", (req, res) => {
   try {
     const userMessage = (req.body.message || "").toLowerCase();
 
@@ -29,11 +29,10 @@ app.post("/suggest", async (req, res) => {
       });
     }
 
-    // 🔍 Match user message with store categories
     let matchedCategory = null;
 
     for (const category of storeCategories) {
-      if (category.keywords.some(keyword => userMessage.includes(keyword))) {
+      if (category.keywords.some(k => userMessage.includes(k))) {
         matchedCategory = category;
         break;
       }
@@ -42,19 +41,24 @@ app.post("/suggest", async (req, res) => {
     if (!matchedCategory) {
       return res.json({
         message: "ما قدرت أحدد الفئة بدقة",
-        hint: "مثال: أبغى شي لحب الشباب أو للبشرة الجافة"
+        hint: "مثال: أبغى شي لحب الشباب أو للتصبغات"
       });
     }
 
+    const searchUrl = `https://m5azn.sa/search?query=${encodeURIComponent(
+      matchedCategory.searchQuery
+    )}`;
+
     res.json({
       storeCategory: matchedCategory.storePath,
-      bestSellingUrl: matchedCategory.m5aznBestSelling
+      searchUrl,
+      recommendedBrands: matchedCategory.recommendedBrands
     });
 
-  } catch (error) {
+  } catch (err) {
     res.status(500).json({
       error: "Server error",
-      details: error.message
+      details: err.message
     });
   }
 });
