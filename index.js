@@ -1,9 +1,7 @@
 import express from "express";
 import cors from "cors";
 
-import { skinConcerns } from "./config/skinConcerns.js";
-import { nameDictionary } from "./config/nameDictionary.js";
-import { m5aznLinks } from "./config/m5aznLinks.js";
+import { storeCategories } from "./config/storeCategories.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,60 +17,44 @@ app.get("/", (req, res) => {
 });
 
 // ===============================
-// SUGGEST PRODUCTS
+// SUGGEST (BASED ON SALLA CATEGORIES)
 // ===============================
 app.post("/suggest", async (req, res) => {
   try {
     const userMessage = (req.body.message || "").toLowerCase();
 
     if (!userMessage) {
-      return res.status(400).json({ error: "Message is required" });
-    }
-
-    // 1️⃣ Detect skin concern
-    let detectedConcern = null;
-
-    for (const key in skinConcerns) {
-      const { keywords } = skinConcerns[key];
-      if (keywords.some(k => userMessage.includes(k))) {
-        detectedConcern = key;
-        break;
-      }
-    }
-
-    if (!detectedConcern) {
-      return res.json({
-        message: "ما قدرت أحدد المشكلة بدقة، جرّب توضح أكثر."
+      return res.status(400).json({
+        error: "Message is required"
       });
     }
 
-    // 2️⃣ Detect product type (optional)
-    let detectedProductType = null;
+    // 🔍 Match user message with store categories
+    let matchedCategory = null;
 
-    for (const type in nameDictionary) {
-      const { synonyms } = nameDictionary[type];
-      if (synonyms.some(s => userMessage.includes(s))) {
-        detectedProductType = type;
+    for (const category of storeCategories) {
+      if (category.keywords.some(keyword => userMessage.includes(keyword))) {
+        matchedCategory = category;
         break;
       }
     }
 
-    // 3️⃣ Get m5azn best-selling link
-    const m5aznData = m5aznLinks[detectedConcern];
+    if (!matchedCategory) {
+      return res.json({
+        message: "ما قدرت أحدد الفئة بدقة",
+        hint: "مثال: أبغى شي لحب الشباب أو للبشرة الجافة"
+      });
+    }
 
     res.json({
-      concern: detectedConcern,
-      label: m5aznData.label,
-      bestSellingUrl: m5aznData.bestSellingUrl,
-      suggestedProductTypes: detectedProductType
-        ? [detectedProductType]
-        : m5aznData.suggestedProductTypes
+      storeCategory: matchedCategory.storePath,
+      bestSellingUrl: matchedCategory.m5aznBestSelling
     });
 
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({
       error: "Server error",
-      details: err.message
+      details: error.message
     });
   }
 });
