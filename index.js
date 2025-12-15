@@ -21,8 +21,10 @@ app.get("/", (req, res) => {
 // ===============================
 app.post("/suggest", (req, res) => {
   try {
-    const userMessage = (req.body.message || "").toLowerCase();
-
+const userMessage = (req.body.message || "")
+  .toLowerCase()
+  .replace(/\s+/g, " ")
+  .trim();
     if (!userMessage) {
       return res.status(400).json({
         error: "Message is required"
