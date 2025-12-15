@@ -31,15 +31,59 @@ const userMessage = (req.body.message || "")
       });
     }
 
-    let matchedCategory = null;
+app.post("/suggest", (req, res) => {
+  try {
+    const userMessage = (req.body.message || "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
 
-    for (const category of storeCategories) {
- if (category.keywords.some(k => userMessage.includes(k.replace(/\s+/g, ""))) ||
-    category.keywords.some(k => userMessage.replace(/\s+/g, "").includes(k.replace(/\s+/g, "")))) {       matchedCategory = category;
-        break;
-      }
+    if (!userMessage) {
+      return res.json({
+        message: "اكتب طلبك أولاً"
+      });
     }
 
+    let detectedCategory = null;
+    let detectedSubCategory = null;
+
+    // 🔍 البحث داخل كل الفئات والفئات الفرعية
+    for (const categoryKey in storeCategories) {
+      const category = storeCategories[categoryKey];
+
+      for (const subKey in category.subcategories) {
+        const sub = category.subcategories[subKey];
+
+        if (sub.keywords.some(k => userMessage.includes(k))) {
+          detectedCategory = category;
+          detectedSubCategory = sub;
+          break;
+        }
+      }
+
+      if (detectedSubCategory) break;
+    }
+
+    if (!detectedSubCategory) {
+      return res.json({
+        message: "ما قدرت أحدد الفئة بدقة، جرّب صيغة مختلفة أو كلمة أوضح."
+      });
+    }
+
+    // ✅ رد واضح للتاجر
+    res.json({
+      mainCategory: detectedCategory.label,
+      subCategory: detectedSubCategory.label,
+      note: "فئة مناسبة للبحث في المخازن الإلكترونية"
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      error: "Server error",
+      details: error.message
+    });
+  }
+});
     if (!matchedCategory) {
       return res.json({
         message: "ما قدرت أحدد الفئة بدقة",
