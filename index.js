@@ -32,8 +32,8 @@ app.post("/suggest", (req, res) => {
     let matchedCategory = null;
 
     for (const category of storeCategories) {
-      if (category.keywords.some(k => userMessage.includes(k))) {
-        matchedCategory = category;
+ if (category.keywords.some(k => userMessage.includes(k.replace(/\s+/g, ""))) ||
+    category.keywords.some(k => userMessage.replace(/\s+/g, "").includes(k.replace(/\s+/g, "")))) {       matchedCategory = category;
         break;
       }
     }
